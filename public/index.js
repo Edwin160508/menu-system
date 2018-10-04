@@ -22,7 +22,7 @@ window.onload = function() {
         window.alert("Seu Navegador não suporta versão estável do IndexedDB. \nOu seu Navegador está em modo de navegação anônimo. \n"+
         "O recurso não está disponível.");
     }else{
-            
+        openConnectionIndexBD();    
         form.addEventListener('submit', function(e){
             e.preventDefault();
             window.alert('Form Enviado');
@@ -59,5 +59,20 @@ window.onload = function() {
     function atualizaValorCampos(){
         nome = document.getElementById('nome').value;
         preco = document.getElementById('preco').value;
+    }
+    function openConnectionIndexBD(){
+        var db;
+        var request = indexedDB.open("menuDB");
+
+        request.onerror = function(event){
+            window.alert("Erro de Base de Dados: "+event.target.errorCode);
+        };
+        request.onsuccess = function(event){
+            db = event.target.result;
+        };
+        request.onupgradeneeded = function(event){
+            db = event.target.result;
+            var objectStore = db.createObjectStore("menuItem", {keyPath:"myKey"});
+        };
     }
 }

@@ -60,6 +60,7 @@ window.onload = function() {
         nome = document.getElementById('nome').value;
         preco = document.getElementById('preco').value;
     }
+    /*Operações com Base de dados*/
     function openConnectionIndexBD(){
         var db;
         var request = indexedDB.open("menuDB");
@@ -71,8 +72,27 @@ window.onload = function() {
             db = event.target.result;
         };
         request.onupgradeneeded = function(event){
+            var intemMenuDefault = [{codigo:"1",nome:"Pepsi Lata 350ml", preco:"4.50"},
+            {codigo:"2",nome:"Guaraná Antartica Lata 350ml", preco:"4.50"}];
+
             db = event.target.result;
-            var objectStore = db.createObjectStore("menuItem", {keyPath:"myKey"});
+            /*Criando objeto "objectStore" no qual possui codigo, nome, preço*/ 
+            var objectStore = db.createObjectStore("menuItem", {keyPath:"codigo"});
+            /*Configurando atributos se o valor de cada campo pode ser repetido ou não*/ 
+            /* Cada produto tem seu código*/    
+            objectStore.createIndex("codigo","codigo",{unique: true});
+            /* Cada produto tem seu nome*/
+            objectStore.createIndex("nome","nome",{unique: true});
+            /* Cada produto tem seu preço podendo ter preços iguais*/
+            objectStore.createIndex("preco","preco",{unique: false});
+
+            objectStore.transaction.oncomplete = function(event){
+                var menuItemObjectStore = db.transaction("menuItem", "readwrite").objectStore("menuItem");
+                intemMenuDefault.forEach(function(itemMenu){
+                    menuItemObjectStore.add(itemMenu);
+                });
+            };
+
         };
     }
 }

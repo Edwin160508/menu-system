@@ -13,7 +13,7 @@ window.onload = function() {
     var addBtn = document.getElementById('addBtn');
     var removeBtn = document.getElementById('removeBtn');
     var getBtn = document.getElementById('getBtn');
-    var updateBtn = document.getElementById('updateBtn');
+    
     var form = document.getElementById('formulario');
     /*Cardapio*/ 
     var codigo = document.getElementById('codigo').value;  
@@ -51,12 +51,7 @@ window.onload = function() {
         console.log(nome);
         console.log(preco);
     });
-    updateBtn.addEventListener('click', function(){
-        console.log('Botao Atualizar');
-        getCurrentFieldValues();
-        console.log(nome);
-        console.log(preco);
-    });
+    
     function getCurrentFieldValues(){
         codigo = document.getElementById('codigo').value;
         nome = document.getElementById('nome').value;
@@ -92,37 +87,24 @@ window.onload = function() {
         };
         var objectStore = transaction.objectStore("produtos");
         var request = objectStore.get(codigo);
-        request.onsuccess = function(event){            
-            if(request.result.nome != nome)
-                document.getElementById("result").innerHTML = "Atualizando nome do produto : "+request.result.nome+" para "+nome;
-            if(request.result.preco != preco)
-                document.getElementById("result").innerHTML = "Atualizando preço do produto: "+request.result.preco+" para "+preco;
-            if(request.result.nome != nome && request.result.preco != preco){
-                document.getElementById("result").innerHTML = "Atualizando nome do produto : "+request.result.nome+" para "+nome+" e preço do produto: "+
+        request.onsuccess = function(event){
+            if(request.result != null){
+                if(request.result.nome != nome)
+                    document.getElementById("result").innerHTML = "Atualizando nome do produto : "+request.result.nome+" para "+nome;
+                if(request.result.preco != preco)
+                    document.getElementById("result").innerHTML = "Atualizando preço do produto: "+request.result.preco+" para "+preco;
+                if(request.result.nome != nome && request.result.preco != preco){
+                    document.getElementById("result").innerHTML = "Atualizando nome do produto : "+request.result.nome+" para "+nome+" e preço do produto: "+
                     request.result.preco+" para "+preco;
-            }    
-            request.result.nome = nome;
-            request.result.preco = preco;
-            objectStore.put(request.result);
+                }    
+                request.result.nome = nome;
+                request.result.preco = preco;
+                objectStore.put(request.result);
+            }else{
+                objectStore.add({codigo: codigo, nome: nome, preco: preco}); 
+                document.getElementById("result").innerHTML = "Adicionado com Sucesso"; 
+            }
         };
-        request.onerror = function(event){
-            objectStore.add({codigo: codigo, nome: nome, preco: preco});
-            document.getElementById("result").innerHTML = "Adicionado com Sucesso";
-        };
-        /*
-        $("#updateBtn").click(function(){
-		var codigo = $("#codigo").val();
-		var nome = $("#nome").val();
-		var transaction = db.transaction(["estudantes"],"readwrite");
-		var objectStore = transaction.objectStore("estudantes");
-		var request = objectStore.get(codigo);
-		request.onsuccess = function(event){
-			$("#result").html("Atualizando : "+request.result.nome + " para " + nome);
-			request.result.nome = nome;
-			objectStore.put(request.result);
-		};
-	});
         
-        */
     }
 }

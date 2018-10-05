@@ -1,3 +1,5 @@
+var request, db;
+
 window.onload = function() {
     // verificando qual navegador esta em uso para usar o indexedDB específico
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -14,7 +16,7 @@ window.onload = function() {
     var updateBtn = document.getElementById('updateBtn');
     var form = document.getElementById('formulario');
     /*Cardapio*/ 
-    var codigo = 0;  
+    var codigo = document.getElementById('codigo').value;  
     var nome = document.getElementById('nome').value;
     var preco = document.getElementById('preco').value;  
 
@@ -32,38 +34,53 @@ window.onload = function() {
     addBtn.addEventListener('click', function(){
         console.log('Botao Adicionar');
         //window.alert(document.getElementById('nome').value);
-        atualizaValorCampos();
+        getCurrentFieldValues();
         console.log(nome);
         console.log(preco);
+        var transaction = db.transaction(["produtos"], "readwrite");
+        
+        transaction.oncomplete = function(event) {
+            console.log("Sucesso :)");
+            //document.getElementById("result").innerHTML("Adicionado com Sucesso");			
+        };
+        
+        transaction.onerror = function(event) {
+            console.log("Erro :(");
+            //document.getElementById("result").innerHTML("Erro ao Adicionar");
+        };
+        var objectStore = transaction.objectStore("produtos");
+        objectStore.add({codigo: codigo, nome: nome, preco: preco});
+
+
     });
 
     removeBtn.addEventListener('click', function(){
         console.log('Botao Remover');
-        atualizaValorCampos();
+        getCurrentFieldValues();
         console.log(nome);
         console.log(preco);
     });
 
     getBtn.addEventListener('click', function(){
         console.log('Botao Localizar');        
-        atualizaValorCampos();
+        getCurrentFieldValues();
         console.log(nome);
         console.log(preco);
     });
     updateBtn.addEventListener('click', function(){
         console.log('Botao Atualizar');
-        atualizaValorCampos();
+        getCurrentFieldValues();
         console.log(nome);
         console.log(preco);
     });
-    function atualizaValorCampos(){
+    function getCurrentFieldValues(){
+        codigo = document.getElementById('codigo').value;
         nome = document.getElementById('nome').value;
         preco = document.getElementById('preco').value;
     }
     /*Operações com Base de dados*/
     function openConnectionIndexBD(){
-        var db;
-        var request = indexedDB.open("menuDB");
+        request = indexedDB.open("menuDBX");
 
         request.onerror = function(event){
             window.alert("Erro de Base de Dados: "+event.target.errorCode);
@@ -72,27 +89,8 @@ window.onload = function() {
             db = event.target.result;
         };
         request.onupgradeneeded = function(event){
-            var intemMenuDefault = [{codigo:"1",nome:"Pepsi Lata 350ml", preco:"4.50"},
-            {codigo:"2",nome:"Guaraná Antartica Lata 350ml", preco:"4.50"}];
-
             db = event.target.result;
-            /*Criando objeto "objectStore" no qual possui codigo, nome, preço*/ 
-            var objectStore = db.createObjectStore("menuItem", {keyPath:"codigo"});
-            /*Configurando atributos se o valor de cada campo pode ser repetido ou não*/ 
-            /* Cada produto tem seu código*/    
-            objectStore.createIndex("codigo","codigo",{unique: true});
-            /* Cada produto tem seu nome*/
-            objectStore.createIndex("nome","nome",{unique: true});
-            /* Cada produto tem seu preço podendo ter preços iguais*/
-            objectStore.createIndex("preco","preco",{unique: false});
-
-            objectStore.transaction.oncomplete = function(event){
-                var menuItemObjectStore = db.transaction("menuItem", "readwrite").objectStore("menuItem");
-                intemMenuDefault.forEach(function(itemMenu){
-                    menuItemObjectStore.add(itemMenu);
-                });
-            };
-
+            var objectStore = db.createObjectStore("produtos", { keyPath : "codigo" });
         };
     }
 }
